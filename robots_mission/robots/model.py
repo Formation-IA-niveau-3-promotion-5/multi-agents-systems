@@ -13,7 +13,27 @@ class RobotsModel(mesa.Model):
     description = (
         "A model for simulating robots clearing nuclear waste."
     )
+
+    def exchange_message(self, speakingRobot, messageType):
+        neighborhood = self.grid.get_neighborhood(speakingRobot.pos, speakingRobot.moore, True)
+        for cell in neighborhood:
+            cell_content = self.grid.get_cell_list_contents(cell)
+            robots = [obj for obj in cell_content if isinstance(obj, Robot)]
+            for robot in robots:
+                speakingRobot.send_message(Message(speakingRobot.get_name(), robot.get_name(), messageType, speakingRobot.get_name()))
+
+
+    def wastesInPos(self, pos):
+        this_cell = self.grid.get_cell_list_contents([pos])
+        wastes = [obj for obj in this_cell if isinstance(obj, RadioactiveWaste)]
+        return wastes
     
+    def addWaste(self, pos, radioactivity):
+        radioactiveWaste = RadioactiveWaste(self.next_id(), pos, self, radioactivity)
+        self.schedule.add(radioactiveWaste)
+        self.grid.place_agent(radioactiveWaste, pos)
+
+
     def __init__(self, width_zone=10, height=20, initial_robots=10, initial_wastes=20):
 
         super().__init__()
@@ -25,7 +45,8 @@ class RobotsModel(mesa.Model):
         self.height = height
         self.initial_robots = initial_robots
         self.initial_wastes = initial_wastes
-        
+        self.totalBadWaste = initial_wastes*3
+
         self.zone1 = (0,width_zone-1)
         self.zone2 = (width_zone-1,width_zone*2-1)
         self.zone3 = (width_zone*2-1,width_zone*3)
@@ -38,7 +59,7 @@ class RobotsModel(mesa.Model):
         self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False)
         self.datacollector = mesa.DataCollector(
             {
-                # To be completed with what you want to evaluate !
+                "Waste not processed": "totalBadWaste",
             }
         )
 
@@ -88,6 +109,15 @@ class RobotsModel(mesa.Model):
 
     def step(self):
         self.__messages_service.dispatch_messages()
+
+        self.totalBadWaste = 0
+        for agent in self.schedule.agents:
+            if isinstance(agent, RadioactiveWaste):
+                if not (agent.pos[0] == self.zone3[1] - 1 and agent.radioactivity == 2):
+                    self.totalBadWaste += 1
+            elif isinstance(agent, Robot):
+                if(Robot.inventory >= 2):
+                    self.totalBadWaste += Robot.inventory
 
         self.schedule.step()
         # collect data

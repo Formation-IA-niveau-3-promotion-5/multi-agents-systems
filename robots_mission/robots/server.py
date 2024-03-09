@@ -12,19 +12,25 @@ def robots_portrayal(agent):
 
     if type(agent) is WhiteRobots:
         portrayal["Shape"] = "robots_mission/robots/resources/white_robot.png"
-        scale = 1
+        scale = 0.6
+        for i in range(agent.inventory):
+            scale += 0.2
         portrayal["scale"] = scale
         portrayal["Layer"] = 1
 
     if type(agent) is YellowRobots:
         portrayal["Shape"] = "robots_mission/robots/resources/yellow_robot.png"
-        scale = 1
+        scale = 0.6
+        for i in range(agent.inventory):
+            scale += 0.2
         portrayal["scale"] = scale
         portrayal["Layer"] = 1
 
     if type(agent) is RedRobots:
         portrayal["Shape"] = "robots_mission/robots/resources/red_robot.png"
-        scale = 1
+        scale = 0.6
+        for i in range(agent.inventory):
+            scale += 0.2
         portrayal["scale"] = scale
         portrayal["Layer"] = 1
 
@@ -47,6 +53,7 @@ def robots_portrayal(agent):
 canvas_element = mesa.visualization.CanvasGrid(robots_portrayal, 30, 20, 500, 500)
 chart_element = mesa.visualization.ChartModule(
     [
+        {"Label": "Waste not processed", "Color": "#AA0000"},
     ]
 )
 

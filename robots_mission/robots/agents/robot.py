@@ -32,6 +32,42 @@ class Robot(CommunicatingAgent):
         self.pos = pos
         self.moore = moore
 
+    def pickup(self):
+        if self.robot_level == 2 and self.pos[0] == self.limit[1]-1:
+            return
+
+        wastes = self.model.wastesInPos(self.pos)
+        for waste in wastes:
+            if waste.radioactivity == self.robot_level:
+                self.model.grid.remove_agent(waste)
+                self.model.schedule.remove(waste)
+                self.inventory += 1
+
+    def check_neighborhood(self):
+        totalNeighbors = 0
+        neighborhood = self.model.grid.get_neighborhood(self.pos, self.moore, True)
+        for neighbor in neighborhood:
+            cell_content = self.model.grid.get_cell_list_contents(neighbor)
+            robots = [obj for obj in cell_content if isinstance(obj, Robot) and obj != self]
+            totalNeighbors += len(robots)
+        return totalNeighbors
+
+    def drop(self):
+        if(self.robot_level == 2): # For red robots
+            if(self.pos[0] >= self.limit[1]-1):
+                while(self.inventory > 1):
+                    self.inventory -= 1
+                    self.model.addWaste(self.pos,self.robot_level)
+        else: # For others robots
+            if(self.pos[0] >= self.limit[1]):
+                while(self.inventory >= 2):
+                    level = self.robot_level
+                    if level < 2: 
+                        level += 1
+
+                    self.model.addWaste(self.pos,level)
+                    self.inventory -= 2
+
     def random_move(self, limit):
         """
         Step one cell in any allowable direction.
