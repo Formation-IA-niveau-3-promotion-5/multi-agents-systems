@@ -39,7 +39,10 @@ class WhiteRobots(Robot):
         #     self.best_neighbor = -1    
         
         # if self.can_move:
-        self.random_move(self.limit)
+        if self.inventory >= 2:
+            self.right_move(self.limit)
+        else:
+            self.random_move(self.limit)
 
 class YellowRobots(Robot):
     def __init__(self, unique_id, pos, model, limit):
@@ -50,7 +53,10 @@ class YellowRobots(Robot):
     def step(self):
         self.pickup()
         self.drop()
-        self.random_move(self.limit)
+        if self.inventory >= 2:
+            self.right_move(self.limit)
+        else:
+            self.random_move(self.limit)
 
 class RedRobots(Robot):
     def __init__(self, unique_id, pos, model, limit):
@@ -61,4 +67,7 @@ class RedRobots(Robot):
     def step(self):
         self.pickup()
         self.drop()
-        self.random_move(self.limit)
+        if self.inventory >= 1:
+            self.right_move(self.limit)
+        else:
+            self.random_move(self.limit)

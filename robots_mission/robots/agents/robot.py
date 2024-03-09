@@ -55,7 +55,7 @@ class Robot(CommunicatingAgent):
     def drop(self):
         if(self.robot_level == 2): # For red robots
             if(self.pos[0] >= self.limit[1]-1):
-                while(self.inventory > 1):
+                while(self.inventory >= 1):
                     self.inventory -= 1
                     self.model.addWaste(self.pos,self.robot_level)
         else: # For others robots
@@ -78,6 +78,23 @@ class Robot(CommunicatingAgent):
         available_moves = []
         for move in next_moves:
             if self.check_is_cell_available(move) and max(0, limit[0]) <= move[0] <= limit[1]:
+                available_moves.append(move)
+
+        if len(available_moves) > 0:
+            next_move = self.random.choice(available_moves)
+            self.model.grid.move_agent(self, next_move)
+
+    def right_move(self, limit):
+        """
+        Step one cell in the right direction.
+        Robots cannot move on another occupied cell. It's working because all robots step asynchronously.
+        """
+        # Pick the next cell from the adjacent cells.
+        next_moves = self.model.grid.get_neighborhood(self.pos, self.moore, True)
+
+        available_moves = []
+        for move in next_moves:
+            if self.check_is_cell_available(move) and max(0, limit[0]) <= move[0] <= limit[1] and move[0] > self.pos[0]:
                 available_moves.append(move)
 
         if len(available_moves) > 0:
